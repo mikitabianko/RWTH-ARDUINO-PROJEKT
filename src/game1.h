@@ -1,9 +1,8 @@
 #ifndef GAME1_H
 #define GAME1_H
 
-#include <Arduino.h>
+#include "Core.h"
 #include "fp.h"
-#include <Adafruit_SH110X.h>
 
 namespace Game1 {
     /* =========================
@@ -74,14 +73,13 @@ namespace Game1 {
         uint16_t color
     );
 
-    void render(Adafruit_SH1106G& display, int screen_w, int screen_h);
+    void render();
 
-    void update(int joystickX, int joystickY, int joystickButtonState);
+    void update();
 
-    /* =========================
-    Utility
-    ========================= */
-    int norm(int n);
+    byte getGameState();
+
+    void clean();
 }
 
 #endif

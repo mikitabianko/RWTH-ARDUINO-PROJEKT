@@ -1,6 +1,5 @@
 #ifndef FP
 #define FP
-// #include <iostream>
 
 // Q8.8 fixed point (int16_t)
 typedef int16_t fix16;

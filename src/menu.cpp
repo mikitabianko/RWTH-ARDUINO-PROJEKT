@@ -1,47 +1,62 @@
-#include "Arduino.h"
 #include "menu.h"
-#include <Adafruit_SH110X.h>
 
-int selectedGame = 0;
-int gameToRun = -1;
+namespace Menu {
+    App::App menu("menu", init, drawMenu, processMenu, clear);
+    byte selectedGame = 0;
 
-int normalize(int n) {
-    if (n > 700) return -1;
-    if (n < 300) return 1;
-    return 0;
-}
-
-void drawCenteredText(Adafruit_SH1106G& display, int screen_w, String& text, int y, uint8_t size, uint8_t color) {
-    int16_t x1, y1;
-    uint16_t w, h;
-
-    display.setTextSize(size);
-    display.setTextColor(SH110X_WHITE);
-    display.getTextBounds(text, 0, 0, &x1, &y1, &w, &h);
-
-    int x = (screen_w - w) / 2;
-    display.setCursor(x, y);
-    display.print(text);
-}
-
-bool isMenuMode = true;
-void drawMenu(Adafruit_SH1106G& display, int screen_h, int screen_w) {
-    display.clearDisplay();
-    int page = selectedGame / 3;
-    for (int i = 0; i < min(3, gamesCount - page * 3); ++i) {        
-        int newId = page * 3 + i;
-
-        if (selectedGame == newId) 
-            drawCenteredText(display, screen_w, games[newId].Name, screen_h / 3 * i + 4, 2, SH110X_WHITE);
-        else 
-            drawCenteredText(display, screen_w, games[newId].Name, screen_h / 3 * i + 8, 1, SH110X_WHITE);
+    int normalize(int n) {
+        if (n > 700) return -1;
+        if (n < 300) return 1;
+        return 0;
     }
-    display.display();
-}
 
-void processMenu(int joystickX, int joystickY, int joystickButtonState) {
-    selectedGame = (selectedGame - normalize(joystickX) + gamesCount) % gamesCount;
-    if (joystickButtonState == LOW) {
-        gameToRun = selectedGame;
+    void drawCenteredText(String& text, int y, uint8_t size, uint8_t color) {
+        int16_t x1, y1;
+        uint16_t w, h;
+
+        System::display.setTextSize(size);
+        System::display.setTextColor(SH110X_WHITE);
+        System::display.getTextBounds(text, 0, 0, &x1, &y1, &w, &h);
+
+        int x = (SCREEN_W - w) / 2;
+        System::display.setCursor(x, y);
+        System::display.print(text);
     }
+
+    bool isMenuMode = true;
+    void drawMenu() {
+#ifdef DEBUG
+        Serial.println("draw");
+#endif
+
+        System::display.clearDisplay();
+        int page = selectedGame / 3;
+        for (int i = 0; i < min(3, gamesCount - page * 3); ++i) {        
+            int newId = page * 3 + i;
+
+            if (selectedGame == newId) 
+                drawCenteredText(games[newId].Name, SCREEN_H / 3 * i + 4, 2, SH110X_WHITE);
+            else 
+                drawCenteredText(games[newId].Name, SCREEN_H / 3 * i + 8, 1, SH110X_WHITE);
+        }
+        System::display.display();
+    }
+
+    void processMenu() {
+        static byte prevSelectedGame = 0;
+        selectedGame = (selectedGame - normalize(System::joystick.getX()) + gamesCount) % gamesCount;
+        Runtime::wasUpdate = Runtime::wasUpdate || (selectedGame != prevSelectedGame);
+        if (System::joystickButton.consumeReleasedEvent()) {
+            Runtime::setApp(games[selectedGame]);
+            Runtime::wasUpdate = true;
+        }
+        prevSelectedGame = selectedGame;
+    }
+
+    void init() {
+        Runtime::updatePeriod = 130; 
+        Runtime::showPeriod = 50; 
+    }
+
+    void clear() {}
 }

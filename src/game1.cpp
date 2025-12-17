@@ -1,6 +1,3 @@
-#include <Arduino.h>
-#include "fp.h"
-#include <Adafruit_SH110X.h>
 #include "game1.h"
 
 namespace Game1 {
@@ -39,6 +36,9 @@ namespace Game1 {
     };
 
     void precalc() {
+        Runtime::updatePeriod = 15;
+        Runtime::showPeriod = 15;
+
         for (int i = 0; i < STEPS_COUNT; ++i) {
             float angleRad = (i * 2 * M_PI) / STEPS_COUNT;
             cosTable[i] = FIX_FROM_FLOAT(cosf(angleRad));
@@ -132,26 +132,26 @@ namespace Game1 {
         }
     }
 
-    void drawCol(Adafruit_SH1106G& display, int lineHeight, bool hitCorner, int col, fix16 dist, uint16_t color) {
+    void drawCol(int lineHeight, bool hitCorner, int col, fix16 dist, uint16_t color) {
         int drawStart = (SCREEN_H >> 1) - (lineHeight >> 1); 
         int drawEnd = (SCREEN_H >> 1) + (lineHeight >> 1);  
 
         // if (drawStart < 0) drawStart = 0;
         if (drawEnd >= SCREEN_H) drawEnd = SCREEN_H - 1;
         
-        int shadeLevel = min(5, max(FIX_TO_INT(dist << 2), 2));  // Example: 0- close, higher- far
+        int shadeLevel = min(5, max(FIX_TO_INT(dist << 2), 2));
         for (int y = drawStart; y < drawEnd; y += shadeLevel) {
-            display.drawPixel(col, y, color);
+            System::display.drawPixel(col, y, color);
         }
 
-        if (hitCorner) display.drawFastVLine(col, drawStart, lineHeight, color);
+        if (hitCorner) System::display.drawFastVLine(col, drawStart, lineHeight, color);
 
-        display.drawPixel(col, drawStart, color);
-        display.drawPixel(col, drawEnd, color);
+        System::display.drawPixel(col, drawStart, color);
+        System::display.drawPixel(col, drawEnd, color);
     }
 
-    void render(Adafruit_SH1106G& display, int screen_w, int screen_h) {
-        display.clearDisplay();
+    void render() {
+        System::display.clearDisplay();
         for (int col = 0; col < SCREEN_W; col++) {
             int rayIdx = (playerAngleIdx + deltaTable[col]);
             rayIdx -= (rayIdx >= STEPS_COUNT) ? STEPS_COUNT : 0;
@@ -176,29 +176,45 @@ namespace Game1 {
 
             //     drawCol(test[col], hitCorner, col, dist, SH110X_BLACK);
             //     test[col] = lineHeight;
-            drawCol(display, lineHeight, hitCorner, col, dist, SH110X_WHITE);
+            drawCol(lineHeight, hitCorner, col, dist, SH110X_WHITE);
             // }
         }
-        display.display();
-    }
-
-    void update(int joystickX, int joystickY, int joystickButtonState) {
-        int x = norm(joystickX);
-        int y = norm(joystickY);
-        int playerAngleIdxSin = (playerAngleIdx + 540);
-        playerAngleIdxSin -= (playerAngleIdxSin >= STEPS_COUNT) ? STEPS_COUNT : 0;
-        playerAngleIdxSin += (playerAngleIdxSin < 0) ? STEPS_COUNT : 0;
-        playerX += FIX_MUL(FIX_MUL(MOVE_SPEED, cosTable[playerAngleIdx]), FIX_FROM_INT(x));
-        playerY += FIX_MUL(FIX_MUL(MOVE_SPEED, cosTable[playerAngleIdxSin]), FIX_FROM_INT(x));
-
-        playerAngleIdx = (playerAngleIdx + y * 8);
-        playerAngleIdx += (playerAngleIdx < 0) ? STEPS_COUNT : 0;
-        playerAngleIdx -= (playerAngleIdx >= STEPS_COUNT) ? STEPS_COUNT : 0;
+        System::display.display();
     }
 
     int norm(int n) {
         if (n > 700) return -1;
         if (n < 300) return 1;
         return 0;
+    }
+
+    void update() {
+        if (System::analogButtons.consumeReleasedEvent(0)) {
+            Runtime::closeApp();
+            return;
+        }
+
+        int x = norm(System::joystick.getX());
+        int y = norm(System::joystick.getY());
+
+        Runtime::wasUpdate = Runtime::wasUpdate || (x || y);
+
+        int playerAngleIdxSin = (playerAngleIdx + 540);
+        playerAngleIdxSin -= (playerAngleIdxSin >= STEPS_COUNT) ? STEPS_COUNT : 0;
+        playerAngleIdxSin += (playerAngleIdxSin < 0) ? STEPS_COUNT : 0;
+        playerX += FIX_MUL(FIX_MUL(MOVE_SPEED, cosTable[playerAngleIdx]), FIX_FROM_INT(x));
+        playerY += FIX_MUL(FIX_MUL(MOVE_SPEED, cosTable[playerAngleIdxSin]), FIX_FROM_INT(x));
+
+        playerAngleIdx = (playerAngleIdx + y * 15);
+        playerAngleIdx += (playerAngleIdx < 0) ? STEPS_COUNT : 0;
+        playerAngleIdx -= (playerAngleIdx >= STEPS_COUNT) ? STEPS_COUNT : 0;
+    }
+
+    byte getGameState() {
+        return 0;
+    }
+
+    void clean() {
+
     }
 }
