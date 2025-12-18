@@ -8,8 +8,8 @@
 #define SCREEN_W 128
 
 constexpr int JOYSTICK_BUTTON_PIN = 10;
-constexpr int JOYSTICK_X_PIN = A0;
-constexpr int JOYSTICK_Y_PIN = A1;
+constexpr int JOYSTICK_X_PIN = A1;
+constexpr int JOYSTICK_Y_PIN = A0;
 constexpr int BUTTONS_PIN = A2;
 
 enum class ButtonId {
@@ -21,8 +21,13 @@ enum class ButtonId {
   Button5
 };
 
+
 namespace System {
     extern Adafruit_SH1106G display;
+
+    enum class Axis { X, Y };
+    enum class CrossDirection { Positive, Negative };
+    enum class Direction { Center, Up, Down, Left, Right };
 
     class DigitalButton {
     private:
@@ -34,8 +39,6 @@ namespace System {
 
         bool _isPressed = false;
         bool _isReleased = false;
-        bool _isPressedLatch = false;   
-        bool _isReleasedLatch = false;
     public:
         DigitalButton(int p, unsigned long delay = 50);
 
@@ -47,13 +50,6 @@ namespace System {
         bool isReleased();
 
         bool isHeld() const;
-
-        bool consumePressed();
-
-        bool consumeReleased();
-
-        bool consumePressedEvent();
-        bool consumeReleasedEvent();
     };
 
     struct ButtonThreshold {
@@ -72,8 +68,6 @@ namespace System {
         byte lastReading;
         byte _isPressed; 
         byte _isReleased;
-        byte _isPressedLatch;
-        byte _isReleasedLatch;
 
         unsigned long lastDebounceTime = 0;
         int lastAnalogValue = 0;
@@ -91,13 +85,6 @@ namespace System {
 
         int getRawValue() const;
         uint8_t getButtonCount() const;
-
-        bool consumePressed(uint8_t index);
-
-        bool consumeReleased(uint8_t index);
-
-        bool consumePressedEvent(uint8_t index);
-        bool consumeReleasedEvent(uint8_t index);
     };
 
     class Joystick {
@@ -132,6 +119,68 @@ namespace System {
     void setup();
 
     void handleInput();
+
+    struct ButtonState {
+        bool pressed = false;    // Was pressed this frame
+        bool released = false;   // Was released this frame
+        bool held = false;       // Is currently held
+    };
+
+    struct DirectionState {
+        bool entered = false;    // Entered direction this frame
+        bool exited = false;     // Exited direction this frame
+        bool held = false;       // Is currently in this direction
+    };
+
+    struct AxisThresholdState {
+        int threshold;           // The threshold value (positive or negative)
+        bool crossedPositive = false;  // Crossed into positive zone
+        bool crossedNegative = false;  // Crossed into negative zone
+        bool uncrossedPositive = false; // Exited positive zone
+        bool uncrossedNegative = false; // Exited negative zone
+    };
+
+    struct JoystickState {
+        int x = 512;
+        int y = 512;
+        bool moved = false;      // Outside deadzone this frame
+
+        DirectionState up;
+        DirectionState down;
+        DirectionState left;
+        DirectionState right;
+
+        // Custom thresholds: array of states, matching customThresholds
+        AxisThresholdState* customX = nullptr;  // Dynamically allocated if needed, or fixed
+        AxisThresholdState* customY = nullptr;
+        uint8_t customXCount = 0;
+        uint8_t customYCount = 0;
+    };
+
+    // Global input state
+    struct InputState {
+        ButtonState joystickButton;
+        ButtonState analogButtons[5];  // Fixed for your 5 buttons
+
+        JoystickState joystick;
+
+        // Function to check custom threshold (example usage)
+        bool wasCrossed(Axis axis, int thresh, CrossDirection dir) const;
+    };
+
+    extern InputState input;  // Global, updated in handleInput()
+
+    // Customizable thresholds (as before)
+    struct AxisThreshold {
+        Axis axis;
+        int value;  // Absolute positive value
+    };
+    constexpr AxisThreshold customThresholds[] = {
+        {Axis::X, 200},
+        {Axis::X, 400},
+        {Axis::Y, 300}
+    };
+    constexpr uint8_t THRESHOLD_COUNT = sizeof(customThresholds) / sizeof(AxisThreshold);
 }
 
 namespace App {

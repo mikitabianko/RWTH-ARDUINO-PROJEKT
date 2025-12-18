@@ -1,9 +1,9 @@
-#ifndef SNAKE_H
-#define SNAKE_H
+#ifndef SLOTMACHINE_H
+#define SLOTMACHINE_H
 
 #include "Core.h"
 
-namespace Snake {
+namespace SlotMachine {
     void init();
     void show();
     void update();

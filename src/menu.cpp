@@ -1,4 +1,4 @@
-#include "menu.h"
+#include "Menu.h"
 
 namespace Menu {
     App::App menu("menu", init, drawMenu, processMenu, clear);
@@ -25,10 +25,6 @@ namespace Menu {
 
     bool isMenuMode = true;
     void drawMenu() {
-#ifdef DEBUG
-        Serial.println("draw");
-#endif
-
         System::display.clearDisplay();
         int page = selectedGame / 3;
         for (int i = 0; i < min(3, gamesCount - page * 3); ++i) {        
@@ -44,9 +40,14 @@ namespace Menu {
 
     void processMenu() {
         static byte prevSelectedGame = 0;
-        selectedGame = (selectedGame - normalize(System::joystick.getX()) + gamesCount) % gamesCount;
+        if (System::input.joystick.up.entered || (System::input.joystick.up.held && !System::input.joystick.up.exited)) {
+            selectedGame = (selectedGame + gamesCount - 1) % gamesCount;
+        }
+        if (System::input.joystick.down.entered || (System::input.joystick.down.held && !System::input.joystick.down.exited)) {
+            selectedGame = (selectedGame + 1) % gamesCount;
+        }
         Runtime::wasUpdate = Runtime::wasUpdate || (selectedGame != prevSelectedGame);
-        if (System::joystickButton.consumeReleasedEvent()) {
+        if (System::input.joystickButton.held) {
             Runtime::setApp(games[selectedGame]);
             Runtime::wasUpdate = true;
         }
@@ -54,7 +55,7 @@ namespace Menu {
     }
 
     void init() {
-        Runtime::updatePeriod = 130; 
+        Runtime::updatePeriod = 150; 
         Runtime::showPeriod = 50; 
     }
 

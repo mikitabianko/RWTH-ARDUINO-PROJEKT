@@ -1,9 +1,9 @@
-#ifndef SNAKE_H
-#define SNAKE_H
+#ifndef TICTACTOE_H
+#define TICTACTOE_H
 
 #include "Core.h"
 
-namespace Snake {
+namespace TicTacToe {
     void init();
     void show();
     void update();

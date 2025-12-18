@@ -1,9 +1,9 @@
-#ifndef SNAKE_H
-#define SNAKE_H
+#ifndef DINO_H
+#define DINO_H
 
 #include "Core.h"
 
-namespace Snake {
+namespace Dino {
     void init();
     void show();
     void update();

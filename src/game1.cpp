@@ -1,4 +1,4 @@
-#include "game1.h"
+#include "Game1.h"
 
 namespace Game1 {
 
@@ -189,9 +189,8 @@ namespace Game1 {
     }
 
     void update() {
-        if (System::analogButtons.consumeReleasedEvent(0)) {
+        if (System::input.analogButtons[0].held) {
             Runtime::closeApp();
-            return;
         }
 
         int x = norm(System::joystick.getX());
@@ -202,10 +201,10 @@ namespace Game1 {
         int playerAngleIdxSin = (playerAngleIdx + 540);
         playerAngleIdxSin -= (playerAngleIdxSin >= STEPS_COUNT) ? STEPS_COUNT : 0;
         playerAngleIdxSin += (playerAngleIdxSin < 0) ? STEPS_COUNT : 0;
-        playerX += FIX_MUL(FIX_MUL(MOVE_SPEED, cosTable[playerAngleIdx]), FIX_FROM_INT(x));
-        playerY += FIX_MUL(FIX_MUL(MOVE_SPEED, cosTable[playerAngleIdxSin]), FIX_FROM_INT(x));
+        playerX += FIX_MUL(FIX_MUL(MOVE_SPEED, cosTable[playerAngleIdx]), FIX_FROM_INT(y));
+        playerY += FIX_MUL(FIX_MUL(MOVE_SPEED, cosTable[playerAngleIdxSin]), FIX_FROM_INT(y));
 
-        playerAngleIdx = (playerAngleIdx + y * 15);
+        playerAngleIdx = (playerAngleIdx - x * 15);
         playerAngleIdx += (playerAngleIdx < 0) ? STEPS_COUNT : 0;
         playerAngleIdx -= (playerAngleIdx >= STEPS_COUNT) ? STEPS_COUNT : 0;
     }

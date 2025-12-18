@@ -2,7 +2,7 @@
 #define GAME1_H
 
 #include "Core.h"
-#include "fp.h"
+#include "Fp.h"
 
 namespace Game1 {
     /* =========================

@@ -1,9 +1,12 @@
-#include <Arduino.h>
-#include "Core.h"
+#include "Core.h" // Funduino
 
-#include "menu.h"
-#include "game1.h"
-#include "snake.h"
+#include "Menu.h"
+#include "Game1.h"
+#include "Snake.h"
+#include "SlotMachine.h"
+#include "TicTacToe.h"
+#include "Dino.h"
+#include "Flappy.h"
 
 namespace Menu {
     App::App games[] = {
@@ -11,13 +14,19 @@ namespace Menu {
             "game1", Game1::precalc, Game1::render, Game1::update, Game1::clean
         },
         {
-            "game2", Game1::precalc, Game1::render, Game1::update, Game1::clean
+            "Snake", Snake::init, Snake::show, Snake::update, Snake::clean
         },
         {
-            "game3", Game1::precalc, Game1::render, Game1::update, Game1::clean
+            "Casino", SlotMachine::init, SlotMachine::show, SlotMachine::update, SlotMachine::clean
         },
         {
-            "game4", Game1::precalc, Game1::render, Game1::update, Game1::clean
+            "TicTacToe", TicTacToe::init, TicTacToe::show, TicTacToe::update, TicTacToe::clean
+        },
+        {
+            "Dino", Dino::init, Dino::show, Dino::update, Dino::clean
+        },
+        {
+            "Flappy", Flappy::init, Flappy::show, Flappy::update, Flappy::clean
         }
     };
     int gamesCount = sizeof(games) / sizeof(App::App);
