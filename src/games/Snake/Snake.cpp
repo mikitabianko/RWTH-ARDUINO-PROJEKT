@@ -162,33 +162,32 @@ namespace Snake {
     }
 
     void update() {
-        if (System::input.analogButtons[0].held) {
+        if (System::input.analogButtons[0].released) {
             Runtime::closeApp();
         }
 
         if (!isAlive) {
-            if (System::input.joystickButton.held) init();
+            if (System::input.joystickButton.released) init();
             return;
         }
 
         byte x = 0;
         byte y = 0;
 
-        if (System::input.joystick.up.entered) x = 1;
-        else if (System::input.joystick.down.entered) x = -1;
-        else if (System::input.joystick.left.entered) y = -1;
-        else if (System::input.joystick.right.entered) y = 1;
+        if (System::input.joystick.lastUpdated == System::Direction::Up) x = 1;
+        else if (System::input.joystick.lastUpdated == System::Direction::Down) x = -1;
+        else if (System::input.joystick.lastUpdated == System::Direction::Left) y = -1;
+        else if (System::input.joystick.lastUpdated == System::Direction::Right) y = 1;
 
-        if (System::input.analogButtons[1].held) x = 1;
-        if (System::input.analogButtons[2].held) x = -1;
-        if (System::input.analogButtons[3].held) y = -1;
-        if (System::input.analogButtons[4].held) y = 1;
+        if (System::input.analogButtons[1].released) x = 1;
+        if (System::input.analogButtons[2].released) x = -1;
+        if (System::input.analogButtons[3].released) y = -1;
+        if (System::input.analogButtons[4].released) y = 1;
 
         if (abs(x) != abs(y)) {
             if ((dir.X != -y && dir.Y != x) || (dir.X == 0 && dir.Y == 0))
                 dir = {y, -x};
         }
-        if (dir.X == dir.Y && dir.X != 0) dir.X = 0;
 
         shift();
 

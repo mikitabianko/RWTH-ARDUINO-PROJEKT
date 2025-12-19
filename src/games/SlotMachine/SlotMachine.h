@@ -1,7 +1,8 @@
 #ifndef SLOTMACHINE_H
 #define SLOTMACHINE_H
 
-#include "Core.h"
+#include "core/System.h"
+#include "core/Runtime.h"
 
 namespace SlotMachine {
     void init();

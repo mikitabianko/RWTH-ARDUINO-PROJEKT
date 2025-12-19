@@ -1,7 +1,8 @@
 #ifndef SNAKE_H
 #define SNAKE_H
 
-#include "Core.h"
+#include "core/System.h"
+#include "core/Runtime.h"
 
 namespace Snake {
     void init();

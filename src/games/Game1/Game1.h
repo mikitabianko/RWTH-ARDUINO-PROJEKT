@@ -1,8 +1,9 @@
 #ifndef GAME1_H
 #define GAME1_H
 
-#include "Core.h"
-#include "Fp.h"
+#include "Core/System.h"
+#include "Core/Runtime.h"
+#include "utils/Fp.h"
 
 namespace Game1 {
     /* =========================
@@ -16,7 +17,7 @@ namespace Game1 {
     /* =========================
     Movement
     ========================= */
-    #define MOVE_SPEED  (fix16)(0.2f * FIX_ONE)
+    #define MOVE_SPEED  (fix16)(0.1f * FIX_ONE)
 
     /* =========================
     World / map

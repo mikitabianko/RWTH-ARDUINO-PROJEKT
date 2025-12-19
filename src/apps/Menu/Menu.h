@@ -1,6 +1,8 @@
 #ifndef MENU_H
 #define MENU_H
-#include "Core.h"
+
+#include "core/System.h"
+#include "core/Runtime.h"
 
 namespace Menu {
     void init();

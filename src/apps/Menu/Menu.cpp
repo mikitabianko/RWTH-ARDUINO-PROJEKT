@@ -40,20 +40,26 @@ namespace Menu {
 
     void processMenu() {
         static byte prevSelectedGame = 0;
-        if (System::input.joystick.up.entered || (System::input.joystick.up.held && !System::input.joystick.up.exited)) {
+        if (System::input.joystick.lastUpdated == System::Direction::Up || System::input.analogButtons[1].released) {
             selectedGame = (selectedGame + gamesCount - 1) % gamesCount;
         }
-        if (System::input.joystick.down.entered || (System::input.joystick.down.held && !System::input.joystick.down.exited)) {
+        if (System::input.joystick.lastUpdated == System::Direction::Down || System::input.analogButtons[2].released) {
             selectedGame = (selectedGame + 1) % gamesCount;
         }
+        // if (System::input.joystick.lastUpdated == System::Direction::Center && System::input.joystick.up.held) {
+        //     selectedGame = (selectedGame + gamesCount - 1) % gamesCount;
+        // }
+        // if (System::input.joystick.lastUpdated == System::Direction::Center && System::input.joystick.down.held) {
+        //     selectedGame = (selectedGame + 1) % gamesCount;
+        // }
+
         Runtime::wasUpdate = Runtime::wasUpdate || (selectedGame != prevSelectedGame);
-        if (System::input.joystickButton.held) {
+        if (System::input.joystickButton.released) {
             Runtime::setApp(games[selectedGame]);
             Runtime::wasUpdate = true;
         }
         prevSelectedGame = selectedGame;
     }
-
     void init() {
         Runtime::updatePeriod = 150; 
         Runtime::showPeriod = 50; 

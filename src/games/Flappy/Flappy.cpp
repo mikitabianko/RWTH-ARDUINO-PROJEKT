@@ -24,14 +24,14 @@ namespace Flappy {
 
     // Bitmask for bird (8x8, 1 byte per row)
     const uint8_t birdBitmap[8] = {
-        0b00111000,
-        0b01111100,
+        0b00000000,
+        0b00111100,
+        0b11110010,
+        0b11110011,
         0b11111110,
-        0b11111111,
-        0b11111110,
         0b01111100,
-        0b00111000,
-        0b00010000
+        0b00000000,
+        0b00000000
     }; // Simple bird shape
 
     void init() {
@@ -44,7 +44,7 @@ namespace Flappy {
         numObstacles = 0;
 
         birdY = (SCREEN_H / 2) - (birdHeight / 2);
-        birdVel = 0;
+        birdVel = -5;
         isAlive = false;
         score = 0;
         speed = 4;
@@ -88,7 +88,7 @@ namespace Flappy {
             System::display.print(score);
         } else {
             if (score == 0) {
-                drawCenteredText("Flappy Bird", 15, 2, SH110X_WHITE);
+                drawCenteredText("Flappy", 15, 2, SH110X_WHITE);
                 drawCenteredText("Press to start", 40, 1, SH110X_WHITE);
             } else {
                 drawCenteredText("Game Over!", 15, 2, SH110X_WHITE);
@@ -101,15 +101,15 @@ namespace Flappy {
     }
 
     void update() {
-        if (System::input.analogButtons[0].held) {
+        if (System::input.analogButtons[0].released) {
             Runtime::closeApp();
         }
 
         if (!isAlive) {
-            if (System::input.joystickButton.held) {
+            if (System::input.joystickButton.released) {
                 numObstacles = 0;
                 birdY = (SCREEN_H / 2) - (birdHeight / 2);
-                birdVel = 0;
+                birdVel = -5;
                 isAlive = true;
                 score = 0;
                 speed = 4;
@@ -119,7 +119,7 @@ namespace Flappy {
         }
 
         // Handle flap
-        if (System::input.joystick.up.entered || System::input.analogButtons[1].held) {
+        if (System::input.joystick.lastUpdated == System::Direction::Up || System::input.analogButtons[1].released) {
             birdVel = -5; // flap upward
         }
 

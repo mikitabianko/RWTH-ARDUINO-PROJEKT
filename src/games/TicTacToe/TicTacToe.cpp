@@ -115,30 +115,30 @@ namespace TicTacToe {
     }
 
     void update() {
-        if (System::input.analogButtons[0].held) {
+        if (System::input.analogButtons[0].released) {
             Runtime::closeApp();
         }
 
         if (gameOver) {
-            if (System::input.joystickButton.held) {
+            if (System::input.joystickButton.released) {
                 init();
             }
             return;
         }
 
         // Handle movement
-        if (System::input.joystick.up.entered || System::input.analogButtons[1].held) {
+        if (System::input.joystick.up.entered || System::input.analogButtons[1].released) {
             if (cursorY > 0) --cursorY;
-        } else if (System::input.joystick.down.entered || System::input.analogButtons[2].held) {
+        } else if (System::input.joystick.down.entered || System::input.analogButtons[2].released) {
             if (cursorY < 2) ++cursorY;
-        } else if (System::input.joystick.left.entered || System::input.analogButtons[3].held) {
+        } else if (System::input.joystick.left.entered || System::input.analogButtons[3].released) {
             if (cursorX > 0) --cursorX;
-        } else if (System::input.joystick.right.entered || System::input.analogButtons[4].held) {
+        } else if (System::input.joystick.right.entered || System::input.analogButtons[4].released) {
             if (cursorX < 2) ++cursorX;
         }
 
         // Place mark
-        if (System::input.joystickButton.held) {
+        if (System::input.joystickButton.released) {
             int pos = cursorY * 3 + cursorX;
             if (board[pos] == ' ') {
                 board[pos] = currentPlayer;

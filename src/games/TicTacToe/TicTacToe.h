@@ -1,7 +1,8 @@
 #ifndef TICTACTOE_H
 #define TICTACTOE_H
 
-#include "Core.h"
+#include "core/System.h"
+#include "core/Runtime.h"
 
 namespace TicTacToe {
     void init();

@@ -147,19 +147,19 @@ namespace Dino {
     }
 
     void update() {
-        if (System::input.analogButtons[0].held) {
+        if (System::input.analogButtons[0].released) {
             Runtime::closeApp();
         }
 
         if (!isAlive) {
-            if (System::input.joystickButton.held) {
+            if (System::input.joystickButton.released) {
                 init();
             }
             return;
         }
 
         // Handle jump
-        if (dinoY == 0 && (System::input.joystick.up.entered || System::input.analogButtons[1].held)) {
+        if (dinoY == 0 && (System::input.joystick.lastUpdated == System::Direction::Up || System::input.analogButtons[1].released)) {
             dinoVel = 12; // lower jump
         }
 

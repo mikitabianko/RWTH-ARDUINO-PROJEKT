@@ -1,7 +1,8 @@
 #ifndef DINO_H
 #define DINO_H
 
-#include "Core.h"
+#include "core/System.h"
+#include "core/Runtime.h"
 
 namespace Dino {
     void init();

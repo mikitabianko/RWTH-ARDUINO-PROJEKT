@@ -16,8 +16,6 @@ namespace Game1 {
     int8_t deltaTable[SCREEN_W]; // 128 * 1
     fix16 projConstTable[SCREEN_W]; // 128 * 2
 
-    // byte test[SCREEN_W];
-
     // 3.264 bytes
     const fix16 halfScreen = FIX_FROM_INT(SCREEN_W / 2);
     const fix16 screenHDiv3 = FIX_DIV(FIX_FROM_INT(SCREEN_H), FIX_FROM_INT(3));  
@@ -189,7 +187,7 @@ namespace Game1 {
     }
 
     void update() {
-        if (System::input.analogButtons[0].held) {
+        if (System::input.analogButtons[0].released) {
             Runtime::closeApp();
         }
 
@@ -204,7 +202,7 @@ namespace Game1 {
         playerX += FIX_MUL(FIX_MUL(MOVE_SPEED, cosTable[playerAngleIdx]), FIX_FROM_INT(y));
         playerY += FIX_MUL(FIX_MUL(MOVE_SPEED, cosTable[playerAngleIdxSin]), FIX_FROM_INT(y));
 
-        playerAngleIdx = (playerAngleIdx - x * 15);
+        playerAngleIdx = (playerAngleIdx - x * 7);
         playerAngleIdx += (playerAngleIdx < 0) ? STEPS_COUNT : 0;
         playerAngleIdx -= (playerAngleIdx >= STEPS_COUNT) ? STEPS_COUNT : 0;
     }

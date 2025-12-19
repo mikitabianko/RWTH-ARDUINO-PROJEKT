@@ -1,4 +1,4 @@
-#include "Core.h"
+#include "System.h"
 
 namespace System {
     Adafruit_SH1106G display(SCREEN_W, SCREEN_H, &Wire, -1);
@@ -79,6 +79,8 @@ namespace System {
 
     void AnalogButtons::read() {
         if ((millis() - lastDebounceTime) < debounceDelay) return;
+        _isReleased = 0;
+        _isPressed = 0;
 
         int analogValue = analogRead(pin);
 
@@ -231,6 +233,8 @@ namespace System {
         input.joystick.right.exited = false;
         input.joystick.right.held = false;
 
+        input.joystick.lastUpdated = Direction::Center;
+
         for (uint8_t i = 0; i < input.joystick.customXCount; ++i) {
             input.joystick.customX[i].crossedPositive = false;
             input.joystick.customX[i].uncrossedPositive = false;
@@ -250,24 +254,16 @@ namespace System {
         joystickButton.read();
         analogButtons.read();
 
-        // Poll
-        joystickButton.read();
-        analogButtons.read();
-        joystick.read();
-
-        // Joystick button
         input.joystickButton.pressed |= joystickButton.isPressed();
         input.joystickButton.released |= joystickButton.isReleased();
         input.joystickButton.held |= joystickButton.isHeld();
 
-        // Analog buttons
         for (uint8_t i = 0; i < analogButtons.getButtonCount(); ++i) {
             input.analogButtons[i].pressed |= analogButtons.isPressed(i);
             input.analogButtons[i].released |= analogButtons.isReleased(i);
             input.analogButtons[i].held |= analogButtons.isHeld(i);
         }
 
-        // Joystick
         static int prevX = 512;
         static int prevY = 512;
         static Direction prevDir = Direction::Center;
@@ -276,35 +272,35 @@ namespace System {
         int currY = joystick.getY();
         input.joystick.x = currX;
         input.joystick.y = currY;
-        input.joystick.moved = joystick.isMoved();
+        input.joystick.moved |= joystick.isMoved();
 
         int dx = currX - 512;
         int dy = currY - 512;
-        Direction currDir = getCurrentDirection(dx, dy);
-
-        // Direction
+        Direction currDir = getCurrentDirection(dx, dy, joystick.deadZone);
         if (currDir != prevDir) {
             if (prevDir != Direction::Center) {
                 DirectionState& ds = (prevDir == Direction::Up) ? input.joystick.up :
                                     (prevDir == Direction::Down) ? input.joystick.down :
                                     (prevDir == Direction::Left) ? input.joystick.left : input.joystick.right;
-                ds.exited = true;
+                ds.exited |= true;
             }
             if (currDir != Direction::Center) {
                 DirectionState& ds = (currDir == Direction::Up) ? input.joystick.up :
                                     (currDir == Direction::Down) ? input.joystick.down :
                                     (currDir == Direction::Left) ? input.joystick.left : input.joystick.right;
-                ds.entered = true;
-                ds.held = true;
+                ds.entered |= true;
+                ds.held |= true;
+                input.joystick.lastUpdated = (currDir == Direction::Up) ? Direction::Up :
+                                    (currDir == Direction::Down) ? Direction::Down :
+                                    (currDir == Direction::Left) ? Direction::Left : Direction::Right;
             }
         } else if (currDir != Direction::Center) {
             DirectionState& ds = (currDir == Direction::Up) ? input.joystick.up :
                                 (currDir == Direction::Down) ? input.joystick.down :
                                 (currDir == Direction::Left) ? input.joystick.left : input.joystick.right;
-            ds.held = true;
+            ds.held |= true;
         }
 
-        // Custom thresholds
         uint8_t xIdx = 0;
         uint8_t yIdx = 0;
         for (uint8_t i = 0; i < THRESHOLD_COUNT; ++i) {
@@ -314,7 +310,6 @@ namespace System {
             int t = thresh.value;
 
             if (thresh.axis == Axis::X && xIdx < input.joystick.customXCount) {
-                // Positive
                 bool prevPos = prevVal >= t;
                 bool currPos = currVal >= t;
                 if (!prevPos && currPos) {
@@ -323,7 +318,6 @@ namespace System {
                     input.joystick.customX[xIdx].uncrossedPositive = true;
                 }
 
-                // Negative
                 bool prevNeg = prevVal <= -t;
                 bool currNeg = currVal <= -t;
                 if (!prevNeg && currNeg) {
@@ -333,7 +327,6 @@ namespace System {
                 }
                 xIdx++;
             } else if (thresh.axis == Axis::Y && yIdx < input.joystick.customYCount) {
-                // Positive
                 bool prevPos = prevVal >= t;
                 bool currPos = currVal >= t;
                 if (!prevPos && currPos) {
@@ -342,7 +335,6 @@ namespace System {
                     input.joystick.customY[yIdx].uncrossedPositive = true;
                 }
 
-                // Negative
                 bool prevNeg = prevVal <= -t;
                 bool currNeg = currVal <= -t;
                 if (!prevNeg && currNeg) {
@@ -354,7 +346,6 @@ namespace System {
             }
         }
 
-        // Update prev
         prevX = currX;
         prevY = currY;
         prevDir = currDir;
@@ -371,96 +362,65 @@ namespace System {
         info |= joystickButton.isHeld();
         for (int i = 0; i < 5; ++i) 
             info |= analogButtons.isPressed(i);
+        for (int i = 0; i < 5; ++i) 
+            info |= analogButtons.isHeld(i);
+        for (int i = 0; i < 5; ++i) 
+            info |= analogButtons.isReleased(i);
 
         wasMoved = nowMoved;
 
         if (!info) return;
-        Serial.print("J: X=");
-        Serial.print(joystick.getX());
-        Serial.print(", Y=");
-        Serial.print(joystick.getY());
+        Serial.print("JX"+String(joystick.getX())+"Y"+String(joystick.getY()));
 
         if (nowMoved) {
-            Serial.print(" m ");
+            Serial.print("m");
         } else {
-            Serial.print(" c ");
+            Serial.print("c");
         }
 
-        Serial.print("JB: ");
+        Serial.print("JB:");
 
         if (joystickButton.isPressed()) {
-            Serial.print("P ");
+            Serial.print("P");
         } else if (joystickButton.isReleased()) {
-            Serial.print("R ");
+            Serial.print("R");
         } else if (joystickButton.isHeld()) {
-            Serial.print("H ");
+            Serial.print("H");
         } else {
-            Serial.print("N ");
+            Serial.print("N");
         }
-        Serial.print("A:");
+        Serial.print("AP");
         for (int i = 0; i < 5; ++i) 
             Serial.print(analogButtons.isPressed(i));
+        Serial.print("AR");
+        for (int i = 0; i < 5; ++i) 
+            Serial.print(analogButtons.isReleased(i));
+        Serial.print("AH");
+        for (int i = 0; i < 5; ++i) 
+            Serial.print(analogButtons.isHeld(i));
+        Serial.print("b");
+        // for (uint8_t i = 0; i < 5; ++i) {
+        //     Serial.print(input.analogButtons[i].pressed);
+        //     Serial.print(input.analogButtons[i].released);
+        //     Serial.print(input.analogButtons[i].held);
+        // }
+        // Serial.print("i");
+        // Serial.print(input.joystick.moved);
+        // Serial.print(input.joystick.up.entered);
+        // Serial.print(input.joystick.up.exited);
+        // Serial.print(input.joystick.up.held);
+        // Serial.print(input.joystick.down.entered);
+        // Serial.print(input.joystick.down.exited);
+        // Serial.print(input.joystick.down.held);
+        // Serial.print(input.joystick.left.entered);
+        // Serial.print(input.joystick.left.exited);
+        // Serial.print(input.joystick.left.held);
+        // Serial.print(input.joystick.right.entered);
+        // Serial.print(input.joystick.right.exited);
+        // Serial.print(input.joystick.right.held);
+        Serial.print((int)input.joystick.lastUpdated);
 
-        Serial.print(input.joystick.left.held);
-        Serial.print(input.joystick.left.entered);
-        Serial.print(input.joystick.left.exited);
-        Serial.print(input.joystickButton.released);
         Serial.println();
 #endif
     }
-
-
-}
-
-namespace InitApp {
-    void init() {}
-    void update() {}
-    void show() {}
-    void clear() {}
-}
-
-namespace Runtime {
-    bool wasUpdate = true;
-    unsigned long updatePeriod = 100;
-    unsigned long showPeriod = 100;
-    App::App app = App::defaultApp;
-
-    unsigned long t1, t2, now;
-
-    void tick() {
-        now = millis();
-        System::handleInput();
-        
-        if (now - t1 >= updatePeriod) {
-            app.update();
-            System::eventsClear();
-            t1 = now;
-        }
-        if (now - t2 >= showPeriod) {
-            if (wasUpdate) app.show();
-            wasUpdate = false;
-            t2 = now;
-        }
-    }
-
-    void setApp(App::App newApp) {
-        // app.clean();
-        app = newApp;
-        app.init();
-        System::eventsClear();
-    }
-
-    void setDefaultApp(App::App newApp) {
-        App::defaultApp = newApp;
-    }
-
-    void closeApp() {
-        app = App::defaultApp;
-        app.init();
-        wasUpdate = true;
-    }
-}
-
-namespace App {
-    App defaultApp("initApp", InitApp::init, InitApp::update, InitApp::show, InitApp::clear);
 }

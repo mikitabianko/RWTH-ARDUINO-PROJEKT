@@ -1,7 +1,8 @@
 #ifndef FLAPPY_H
 #define FLAPPY_H
 
-#include "Core.h"
+#include "core/System.h"
+#include "core/Runtime.h"
 
 namespace Flappy {
     void init();

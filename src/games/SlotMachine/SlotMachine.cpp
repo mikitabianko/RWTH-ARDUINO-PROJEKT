@@ -81,17 +81,17 @@ namespace SlotMachine {
     }
 
     void update() {
-        if (System::input.analogButtons[0].held) {
+        if (System::input.analogButtons[0].released) {
             Runtime::closeApp();
         }
 
         if (!isAlive) {
-            if (System::input.joystickButton.held) init();
+            if (System::input.joystickButton.released) init();
             return;
         }
 
         if (!spinning) {
-            if (System::input.joystickButton.held && credits > 0) {
+            if (System::input.joystickButton.released && credits > 0) {
                 gain = 0;
                 credits--;
                 spinning = true;

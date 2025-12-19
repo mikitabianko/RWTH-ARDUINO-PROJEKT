@@ -1,12 +1,14 @@
-#include "Core.h" // Funduino
+#include "core/System.h" // Funduino
+#include "core/Runtime.h"
 
-#include "Menu.h"
-#include "Game1.h"
-#include "Snake.h"
-#include "SlotMachine.h"
-#include "TicTacToe.h"
-#include "Dino.h"
-#include "Flappy.h"
+#include "apps/Menu/Menu.h"
+
+#include "games/Game1/Game1.h"
+#include "games/Snake/Snake.h"
+#include "games/SlotMachine/SlotMachine.h"
+#include "games/TicTacToe/TicTacToe.h"
+#include "games/Dino/Dino.h"
+#include "games/Flappy/Flappy.h"
 
 namespace Menu {
     App::App games[] = {

@@ -1,5 +1,5 @@
-#ifndef CORE_H
-#define CORE_H
+#ifndef SYSTEM_H
+#define SYSTEM_H
 
 #include "Arduino.h"
 #include "Adafruit_SH110X.h"
@@ -11,16 +11,6 @@ constexpr int JOYSTICK_BUTTON_PIN = 10;
 constexpr int JOYSTICK_X_PIN = A1;
 constexpr int JOYSTICK_Y_PIN = A0;
 constexpr int BUTTONS_PIN = A2;
-
-enum class ButtonId {
-  None = 0,
-  Button1,
-  Button2,
-  Button3,
-  Button4,
-  Button5
-};
-
 
 namespace System {
     extern Adafruit_SH1106G display;
@@ -93,10 +83,11 @@ namespace System {
         int yPin;
         int xValue = 512; 
         int yValue = 512;
-        int deadZone = 50;
 
     public:
-        Joystick(int xp, int yp) : xPin(xp), yPin(yp) {}
+        const int deadZone;
+
+        Joystick(int xp, int yp, int deadZone = 100) : xPin(xp), yPin(yp), deadZone(deadZone) {}
         void init();
         void read();
         int getX() const { return xValue; }
@@ -150,6 +141,8 @@ namespace System {
         DirectionState left;
         DirectionState right;
 
+        Direction lastUpdated;
+
         // Custom thresholds: array of states, matching customThresholds
         AxisThresholdState* customX = nullptr;  // Dynamically allocated if needed, or fixed
         AxisThresholdState* customY = nullptr;
@@ -181,44 +174,7 @@ namespace System {
         {Axis::Y, 300}
     };
     constexpr uint8_t THRESHOLD_COUNT = sizeof(customThresholds) / sizeof(AxisThreshold);
+
+    void eventsClear();
 }
-
-namespace App {
-    class App {
-    public:
-        String Name;
-        void (*init)();
-        void (*show)();
-        void (*update)();
-        void (*clean)();
-
-        App(String name, 
-            void (*init)(),
-            void (*show)(),
-            void (*update)(),
-            void (*clean)()) 
-        : Name(name), init(init), show(show), update(update), clean(clean) {}
-
-        App();
-    };
-
-    extern App defaultApp;
-}
-
-namespace Runtime {
-    extern bool wasUpdate;
-    extern unsigned long updatePeriod;
-    extern unsigned long showPeriod;
-    
-    extern App::App app;
-
-    void setApp(App::App newApp);
-
-    void closeApp();
-
-    void setDefaultApp(App::App newApp);
-
-    void tick();
-}
-
 #endif
