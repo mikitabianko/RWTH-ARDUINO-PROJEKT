@@ -10,7 +10,7 @@ namespace SlotMachine {
     const int num_symbols = 4;
     const char* symbols[4] = { "7", "C", "L", "B" };
     const int pays[4] = { 50, 10, 5, 20 };
-    bool gain = 0;
+    int gain = 0;
 
     void init() {
         Runtime::updatePeriod = 50;
@@ -91,7 +91,7 @@ namespace SlotMachine {
         }
 
         if (!spinning) {
-            if (System::input.joystickButton.released && credits > 0) {
+            if ((System::input.joystickButton.released || System::input.joystick.lastUpdated == System::Direction::Down) && credits > 0) {
                 gain = 0;
                 credits--;
                 spinning = true;

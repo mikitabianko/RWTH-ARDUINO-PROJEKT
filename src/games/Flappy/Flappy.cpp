@@ -106,7 +106,7 @@ namespace Flappy {
         }
 
         if (!isAlive) {
-            if (System::input.joystickButton.released) {
+            if (System::input.joystickButton.released || System::input.joystick.lastUpdated == System::Direction::Up) {
                 numObstacles = 0;
                 birdY = (SCREEN_H / 2) - (birdHeight / 2);
                 birdVel = -5;

@@ -3,9 +3,9 @@
 namespace System {
     Adafruit_SH1106G display(SCREEN_W, SCREEN_H, &Wire, -1);
 
-    DigitalButton joystickButton(JOYSTICK_BUTTON_PIN, 50);
+    DigitalButton joystickButton(JOYSTICK_BUTTON_PIN, 40);
     Joystick joystick(JOYSTICK_X_PIN, JOYSTICK_Y_PIN);
-    AnalogButtons analogButtons(BUTTONS_PIN, analogThresholds, 5, 50);
+    AnalogButtons analogButtons(BUTTONS_PIN, analogThresholds, 5, 40);
 
     DigitalButton::DigitalButton(int p, unsigned long delay) : pin(p), debounceDelay(delay) {}
 

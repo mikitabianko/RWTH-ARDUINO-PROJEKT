@@ -46,12 +46,6 @@ namespace Menu {
         if (System::input.joystick.lastUpdated == System::Direction::Down || System::input.analogButtons[2].released) {
             selectedGame = (selectedGame + 1) % gamesCount;
         }
-        // if (System::input.joystick.lastUpdated == System::Direction::Center && System::input.joystick.up.held) {
-        //     selectedGame = (selectedGame + gamesCount - 1) % gamesCount;
-        // }
-        // if (System::input.joystick.lastUpdated == System::Direction::Center && System::input.joystick.down.held) {
-        //     selectedGame = (selectedGame + 1) % gamesCount;
-        // }
 
         Runtime::wasUpdate = Runtime::wasUpdate || (selectedGame != prevSelectedGame);
         if (System::input.joystickButton.released) {
