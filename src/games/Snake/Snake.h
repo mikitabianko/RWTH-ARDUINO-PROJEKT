@@ -3,6 +3,7 @@
 
 #include "core/System.h"
 #include "core/Runtime.h"
+#include "Config.h"
 
 namespace Snake {
     void init();

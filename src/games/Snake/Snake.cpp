@@ -9,8 +9,14 @@ namespace Snake {
         int X, Y;
     };
 
-    const byte CELL_SIZE = 2;
-    const byte Y_OFFSET = 8;
+    const byte CELL_SIZE = 4; 
+    const byte Y_OFFSET  = 8; 
+    const byte MAP_W     = Config::Display::Width / CELL_SIZE;
+    const byte MAP_H     = (Config::Display::Height - Y_OFFSET) / CELL_SIZE;
+
+    typedef uint32_t MapType;
+    const byte BITS_IN_TYPE = sizeof(MapType) * 8;
+    const byte ELEMENTS_PER_ROW = (MAP_W + BITS_IN_TYPE - 1) / BITS_IN_TYPE;
 
     Vector dir = { 0, 0 };
 
@@ -26,17 +32,18 @@ namespace Snake {
     }
 
     void setMap(Point a, bool x) {
-        bitSetTo(gameMap[a.Y * 2 + (a.X / 32)], a.X % 32, x);
+        bitSetTo(gameMap[a.Y * ELEMENTS_PER_ROW + (a.X / BITS_IN_TYPE)], a.X % BITS_IN_TYPE, x);
     }
+
     bool getMap(Point a) {
-        return (gameMap[a.Y * 2 + (a.X / 32)] & (1ULL << (a.X % 32))) != 0;
+        return (gameMap[a.Y * ELEMENTS_PER_ROW + (a.X / BITS_IN_TYPE)] & (1UL << (a.X % BITS_IN_TYPE))) != 0;
     }
 
     void generate_food() {
         Point p;
         do {
-            p.X = rand() % 62 + 1;
-            p.Y = rand() % 26 + 1;
+            p.X = rand() % (MAP_W - 2) + 1;
+            p.Y = rand() % (MAP_H - 2) + 1;
         } while (getMap(p));
         food = p;
     }
@@ -47,24 +54,27 @@ namespace Snake {
 
         dir = {0, 0};
 
+        int mapArraySize = MAP_H * ELEMENTS_PER_ROW;
         if (gameMap == nullptr) {
-            gameMap = new unsigned long long[28 * 2];
+            gameMap = new unsigned long long[mapArraySize];
         }
         if (snake == nullptr) {
             snake = new std::deque<Point>();
         }
 
-        for (byte i = 0; i < 28 * 2; ++i) gameMap[i] = 0;
-        for (byte i = 0; i < 28; ++i) {
+        for (int i = 0; i < mapArraySize; ++i) gameMap[i] = 0;
+
+        for (byte i = 0; i < MAP_H; ++i) {
             setMap({0, i}, 1);
-            setMap({63, i}, 1);
+            setMap((Point){(byte)(MAP_W - 1), i}, 1);
         }
-        for (byte i = 0; i < 64; ++i) {
+        for (byte i = 0; i < MAP_W; ++i) {
             setMap({i, 0}, 1);
-            setMap({i, 27}, 1);
+            setMap((Point){i, (byte)(MAP_H - 1)}, 1);
         }
 
-        head = { 32, 14 };
+        head = { (byte)(MAP_W / 2), (byte)(MAP_H / 2) };
+
         snake->clear();
         snake->push_back(head);
         setMap(head, 1);
@@ -97,8 +107,8 @@ namespace Snake {
             System::display->print("Score: ");
             System::display->print(size);
 
-            for (int i = 0; i < 28; ++i) {
-                for (int j = 0; j < 64; ++j) {
+            for (int i = 0; i < MAP_H; ++i) {
+                for (int j = 0; j < MAP_W; ++j) {
                     if (getMap({(byte)j, (byte)i})) {
                         System::display->fillRect(
                             j * CELL_SIZE, 
@@ -112,12 +122,13 @@ namespace Snake {
             }
 
             // Draw food
-            int fx = 2 * food.X;
-            int fy = 8 + 2 * food.Y;
-            System::display->drawPixel(fx, fy, Drivers::Color::White);
-            System::display->drawPixel(fx + 1, fy, Drivers::Color::White);
-            System::display->drawPixel(fx, fy + 1, Drivers::Color::White);
-            System::display->drawPixel(fx + 1, fy + 1, Drivers::Color::White);
+            System::display->fillRect(
+                food.X * CELL_SIZE, 
+                Y_OFFSET + food.Y * CELL_SIZE, 
+                CELL_SIZE, 
+                CELL_SIZE, 
+                Drivers::Color::White
+            );
         } else {
             drawCenteredText("Your score: " + String(size), 0, 1, Drivers::Color::White);
             drawCenteredText("Game Over!", 26, 2, Drivers::Color::White);
