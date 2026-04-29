@@ -9,20 +9,19 @@ namespace Dino {
     const int maxObstacles = 5;
     Obstacle* obstacles = nullptr;
     int numObstacles;
-    int dinoY; // height above ground, 0 on ground
+    int dinoY; 
     int dinoVel;
     bool isAlive;
     int score;
     int groundSpeed;
     int nextObsCounter;
-    const int groundY = 45; // ground line at y=45 to give more space
-    const int dinoX = 10; // fixed x position
+    const int groundY = 45;
+    const int dinoX = 10;
     const int dinoWidth = 16;
     const int dinoHeight = 16;
     const int cactusWidth = 8;
     const int cactusHeight = 16;
 
-    // Bitmask for dino (smaller size, 16x16, 1 bit per pixel, bytes are vertical)
     const uint8_t dinoBitmap[] = {
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x7C, 0xFE, 0xFE, 0x7C, 0x38,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -40,12 +39,9 @@ namespace Dino {
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-    }; // This is a placeholder; design actual bitmask for a small dino
+    }; 
 
-    // Actual simple dino bitmask (adjust bits to form shape)
-    // For example:
-    // Head, body, legs, tail
-    const uint8_t actualDinoBitmap[32] = { // 16x16, 32 bytes (16 height * 2 bytes wide)
+    const uint8_t actualDinoBitmap[32] = { 
         0b00000000, 0b00000000,
         0b00000000, 0b00000000,
         0b00000111, 0b11111110,
@@ -97,53 +93,53 @@ namespace Dino {
         isAlive = true;
         score = 0;
         groundSpeed = 4;
-        nextObsCounter = 30 + rand() % 20; // initial delay in frames
+        nextObsCounter = 30 + rand() % 20; 
     }
 
     void drawCenteredText(String text, int y, uint8_t size, uint8_t color) {
         int16_t x1, y1;
         uint16_t w, h;
 
-        System::display.setTextSize(size);
-        System::display.setTextColor(SH110X_WHITE);
-        System::display.getTextBounds(text, 0, 0, &x1, &y1, &w, &h);
+        System::display->setTextSize(size);
+        System::display->setTextColor(Drivers::Color::White);
+        System::display->getTextBounds(text, 0, 0, &x1, &y1, &w, &h);
 
         int x = (SCREEN_W - w) / 2;
-        System::display.setCursor(x, y);
-        System::display.print(text);
+        System::display->setCursor(x, y);
+        System::display->print(text);
     }
 
     void show() {
-        System::display.clearDisplay();
+        System::display->clear();
 
         if (isAlive) {
             // Draw ground
-            System::display.drawLine(0, groundY, 128, groundY, SH110X_WHITE);
+            System::display->drawLine(0, groundY, 128, groundY, Drivers::Color::White);
 
             // Draw dino
             int dinoBottomY = groundY - dinoY - dinoHeight + 1;
-            System::display.drawBitmap(dinoX, dinoBottomY, actualDinoBitmap, dinoWidth, dinoHeight, SH110X_WHITE);
+            System::display->drawBitmap(dinoX, dinoBottomY, actualDinoBitmap, dinoWidth, dinoHeight, Drivers::Color::White);
 
             // Draw obstacles
             for (int i = 0; i < numObstacles; ++i) {
                 if (obstacles[i].type == 0) {
-                    System::display.drawBitmap(obstacles[i].x, groundY - cactusHeight + 1, cactusBitmap, cactusWidth, cactusHeight, SH110X_WHITE);
+                    System::display->drawBitmap(obstacles[i].x, groundY - cactusHeight + 1, cactusBitmap, cactusWidth, cactusHeight, Drivers::Color::White);
                 }
             }
 
             // Draw score
-            System::display.setTextSize(1);
-            System::display.setTextColor(SH110X_WHITE);
-            System::display.setCursor(0, 0);
-            System::display.print("HI ");
-            System::display.print(score);
+            System::display->setTextSize(1);
+            System::display->setTextColor(Drivers::Color::White);
+            System::display->setCursor(0, 0);
+            System::display->print("HI ");
+            System::display->print(score);
         } else {
-            drawCenteredText("Game Over!", 15, 2, SH110X_WHITE);
-            drawCenteredText("Score: " + String(score), 35, 1, SH110X_WHITE);
-            drawCenteredText("Press to restart", 50, 1, SH110X_WHITE);
+            drawCenteredText("Game Over!", 15, 2, Drivers::Color::White);
+            drawCenteredText("Score: " + String(score), 35, 1, Drivers::Color::White);
+            drawCenteredText("Press to restart", 50, 1, Drivers::Color::White);
         }
 
-        System::display.display();
+        System::display->display();
     }
 
     void update() {

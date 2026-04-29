@@ -1,11 +1,11 @@
 #include "Game1.h"
 
 namespace Game1 {
-
     fix16 angleStep = FIX_FROM_FLOAT((float)MAX_VIEWING_ANGLE / SCREEN_W);
 
     const int STEP_SIZE = SCREEN_W / MAX_VIEWING_ANGLE;
     const int STEPS_COUNT = 360 * STEP_SIZE;
+    const int STEP_90 = STEPS_COUNT / 4;
 
     fix16 playerX = FIX_FROM_INT(4);  
     fix16 playerY = FIX_FROM_INT(7);  
@@ -59,7 +59,7 @@ namespace Game1 {
     }
 
     inline void raycastDDA(fix16 posX, fix16 posY, int16_t dirIdx, fix16& rayOffset, fix16& rayDirection, bool& hitCorner) {
-        int16_t dirIdxSin = (dirIdx + 540);
+        int16_t dirIdxSin = (dirIdx + STEP_90 * 3);
         dirIdxSin -= (dirIdxSin >= STEPS_COUNT) ? STEPS_COUNT : 0;
         dirIdxSin += (dirIdxSin < 0) ? STEPS_COUNT : 0;
 
@@ -130,26 +130,36 @@ namespace Game1 {
         }
     }
 
-    void drawCol(int lineHeight, bool hitCorner, int col, fix16 dist, uint16_t color) {
+    void drawCol(int lineHeight, bool hitCorner, int col, fix16 dist, Drivers::Color color) {
         int drawStart = (SCREEN_H >> 1) - (lineHeight >> 1); 
         int drawEnd = (SCREEN_H >> 1) + (lineHeight >> 1);  
+
+        // Serial.println(lineHeight);
+
+        if (drawStart > drawEnd) {
+            for (int y = 0; y < SCREEN_H; y += 2) {
+                System::display->drawPixel(col, y, color);
+
+            }
+            return;
+        }
 
         // if (drawStart < 0) drawStart = 0;
         if (drawEnd >= SCREEN_H) drawEnd = SCREEN_H - 1;
         
         int shadeLevel = min(5, max(FIX_TO_INT(dist << 2), 2));
         for (int y = drawStart; y < drawEnd; y += shadeLevel) {
-            System::display.drawPixel(col, y, color);
+            System::display->drawPixel(col, y, color);
         }
 
-        if (hitCorner) System::display.drawFastVLine(col, drawStart, lineHeight, color);
+        if (hitCorner) System::display->drawVLine(col, drawStart, lineHeight, color);
 
-        System::display.drawPixel(col, drawStart, color);
-        System::display.drawPixel(col, drawEnd, color);
+        System::display->drawPixel(col, drawStart, color);
+        System::display->drawPixel(col, drawEnd, color);
     }
 
     void render() {
-        System::display.clearDisplay();
+        System::display->clear();
         for (int col = 0; col < SCREEN_W; col++) {
             int rayIdx = (playerAngleIdx + deltaTable[col]);
             rayIdx -= (rayIdx >= STEPS_COUNT) ? STEPS_COUNT : 0;
@@ -157,7 +167,6 @@ namespace Game1 {
 
             fix16 a, b;
             bool hitCorner = false;
-
 
             raycastDDA(playerX, playerY, rayIdx, a, b, hitCorner);
             fix16 dist = FIX_DIV(a, b);
@@ -174,16 +183,32 @@ namespace Game1 {
 
             //     drawCol(test[col], hitCorner, col, dist, SH110X_BLACK);
             //     test[col] = lineHeight;
-            drawCol(lineHeight, hitCorner, col, dist, SH110X_WHITE);
+            drawCol(lineHeight, hitCorner, col, dist, Drivers::Color::White);
             // }
         }
-        System::display.display();
+        System::display->display();
     }
 
     int norm(int n) {
         if (n > 700) return -1;
         if (n < 300) return 1;
         return 0;
+    }
+
+    void pocessMoving(int x, int y) {
+        int playerAngleIdxSin = (playerAngleIdx + STEP_90 * 3);
+        playerAngleIdxSin -= (playerAngleIdxSin >= STEPS_COUNT) ? STEPS_COUNT : 0;
+        playerAngleIdxSin += (playerAngleIdxSin < 0) ? STEPS_COUNT : 0;
+
+        fix16 deltaX = FIX_MUL(FIX_MUL(MOVE_SPEED, cosTable[playerAngleIdx]), FIX_FROM_INT(y));
+        fix16 deltaY = FIX_MUL(FIX_MUL(MOVE_SPEED, cosTable[playerAngleIdxSin]), FIX_FROM_INT(y));
+
+        if (!isWall(FIX_TO_INT(playerX + deltaX * 3), FIX_TO_INT(playerY))) {
+            playerX += deltaX;
+        }
+        if (!isWall(FIX_TO_INT(playerX), FIX_TO_INT(playerY + deltaY * 3))) {
+            playerY += deltaY;
+        }
     }
 
     void update() {
@@ -195,12 +220,8 @@ namespace Game1 {
         int y = norm(System::joystick.getY());
 
         Runtime::wasUpdate = Runtime::wasUpdate || (x || y);
-
-        int playerAngleIdxSin = (playerAngleIdx + 540);
-        playerAngleIdxSin -= (playerAngleIdxSin >= STEPS_COUNT) ? STEPS_COUNT : 0;
-        playerAngleIdxSin += (playerAngleIdxSin < 0) ? STEPS_COUNT : 0;
-        playerX += FIX_MUL(FIX_MUL(MOVE_SPEED, cosTable[playerAngleIdx]), FIX_FROM_INT(y));
-        playerY += FIX_MUL(FIX_MUL(MOVE_SPEED, cosTable[playerAngleIdxSin]), FIX_FROM_INT(y));
+        
+        pocessMoving(x, y);
 
         playerAngleIdx = (playerAngleIdx - x * 7);
         playerAngleIdx += (playerAngleIdx < 0) ? STEPS_COUNT : 0;

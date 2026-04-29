@@ -1,8 +1,8 @@
 #ifndef GAME1_H
 #define GAME1_H
 
-#include "Core/System.h"
-#include "Core/Runtime.h"
+#include "core/System.h"
+#include "core/Runtime.h"
 #include "utils/Fp.h"
 
 namespace Game1 {
@@ -33,6 +33,7 @@ namespace Game1 {
 
     extern const int STEP_SIZE;
     extern const int STEPS_COUNT;
+    extern const int STEPS_90;
 
     extern fix16 cosTable[];
     extern fix16 deltaDistTable[];
@@ -63,15 +64,6 @@ namespace Game1 {
         fix16& rayOffset,
         fix16& rayDirection,
         bool& hitCorner
-    );
-
-    void drawCol(
-        Adafruit_SH1106G& display,
-        int lineHeight,
-        bool hitCorner,
-        int col,
-        fix16 dist,
-        uint16_t color
     );
 
     void render();

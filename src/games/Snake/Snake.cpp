@@ -6,15 +6,18 @@ namespace Snake {
         byte X, Y;
     };
     struct Vector {
-        byte X, Y;
+        int X, Y;
     };
+
+    const byte CELL_SIZE = 2;
+    const byte Y_OFFSET = 8;
 
     Vector dir = { 0, 0 };
 
     Point head;
     Point food;
     std::deque<Point>* snake = nullptr;
-    unsigned long long* gameMap = nullptr; // flattened 28*2 array for 64x28 bits
+    unsigned long long* gameMap = nullptr;
     int size;
     bool isAlive;
 
@@ -51,12 +54,12 @@ namespace Snake {
             snake = new std::deque<Point>();
         }
 
-        for (int i = 0; i < 28 * 2; ++i) gameMap[i] = 0;
-        for (int i = 0; i < 28; ++i) {
+        for (byte i = 0; i < 28 * 2; ++i) gameMap[i] = 0;
+        for (byte i = 0; i < 28; ++i) {
             setMap({0, i}, 1);
             setMap({63, i}, 1);
         }
-        for (int i = 0; i < 64; ++i) {
+        for (byte i = 0; i < 64; ++i) {
             setMap({i, 0}, 1);
             setMap({i, 27}, 1);
         }
@@ -75,32 +78,35 @@ namespace Snake {
         int16_t x1, y1;
         uint16_t w, h;
 
-        System::display.setTextSize(size);
-        System::display.setTextColor(SH110X_WHITE);
-        System::display.getTextBounds(text, 0, 0, &x1, &y1, &w, &h);
+        System::display->setTextSize(size);
+        System::display->setTextColor(Drivers::Color::White);
+        System::display->getTextBounds(text, 0, 0, &x1, &y1, &w, &h);
 
         int x = (SCREEN_W - w) / 2;
-        System::display.setCursor(x, y);
-        System::display.print(text);
+        System::display->setCursor(x, y);
+        System::display->print(text);
     }
 
     void show() {
-        System::display.clearDisplay();
+        System::display->clear();
 
         if (isAlive) {
-            System::display.setTextSize(1);
-            System::display.setTextColor(SH110X_WHITE);
-            System::display.setCursor(3, 0);
-            System::display.print("Score: ");
-            System::display.print(size);
+            System::display->setTextSize(1);
+            System::display->setTextColor(Drivers::Color::White);
+            System::display->setCursor(3, 0);
+            System::display->print("Score: ");
+            System::display->print(size);
 
             for (int i = 0; i < 28; ++i) {
                 for (int j = 0; j < 64; ++j) {
-                    if (getMap({j, i})) {
-                        System::display.drawPixel(2 * j, 8 + 2 * i, SH110X_WHITE);
-                        System::display.drawPixel(2 * j + 1, 8 + 2 * i, SH110X_WHITE);
-                        System::display.drawPixel(2 * j, 8 + 2 * i + 1, SH110X_WHITE);
-                        System::display.drawPixel(2 * j + 1, 8 + 2 * i + 1, SH110X_WHITE);
+                    if (getMap({(byte)j, (byte)i})) {
+                        System::display->fillRect(
+                            j * CELL_SIZE, 
+                            Y_OFFSET + i * CELL_SIZE, 
+                            CELL_SIZE, 
+                            CELL_SIZE, 
+                            Drivers::Color::White
+                        );
                     }
                 }
             }
@@ -108,17 +114,17 @@ namespace Snake {
             // Draw food
             int fx = 2 * food.X;
             int fy = 8 + 2 * food.Y;
-            System::display.drawPixel(fx, fy, SH110X_WHITE);
-            System::display.drawPixel(fx + 1, fy, SH110X_WHITE);
-            System::display.drawPixel(fx, fy + 1, SH110X_WHITE);
-            System::display.drawPixel(fx + 1, fy + 1, SH110X_WHITE);
+            System::display->drawPixel(fx, fy, Drivers::Color::White);
+            System::display->drawPixel(fx + 1, fy, Drivers::Color::White);
+            System::display->drawPixel(fx, fy + 1, Drivers::Color::White);
+            System::display->drawPixel(fx + 1, fy + 1, Drivers::Color::White);
         } else {
-            drawCenteredText("Your score: " + String(size), 0, 1, SH110X_WHITE);
-            drawCenteredText("Game Over!", 26, 2, SH110X_WHITE);
-            drawCenteredText("Press to play again", 56, 1, SH110X_WHITE);
+            drawCenteredText("Your score: " + String(size), 0, 1, Drivers::Color::White);
+            drawCenteredText("Game Over!", 26, 2, Drivers::Color::White);
+            drawCenteredText("Press to play again", 56, 1, Drivers::Color::White);
         }
 
-        System::display.display();
+        System::display->display();
     }
 
     int normalize(int n) {
@@ -171,8 +177,8 @@ namespace Snake {
             return;
         }
 
-        byte x = 0;
-        byte y = 0;
+        int x = 0;
+        int y = 0;
 
         if (System::input.joystick.lastUpdated == System::Direction::Up) x = 1;
         else if (System::input.joystick.lastUpdated == System::Direction::Down) x = -1;

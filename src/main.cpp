@@ -1,5 +1,9 @@
-#include "core/System.h" // Funduino
+#include "core/System.h" 
 #include "core/Runtime.h"
+
+#include "Config.h"
+
+#include "drivers/display/SH110X/SH110X_Driver.h"
 
 #include "apps/Menu/Menu.h"
 
@@ -34,7 +38,14 @@ namespace Menu {
     int gamesCount = sizeof(games) / sizeof(App::App);
 }
 
+static Drivers::SH110X_Driver Display(
+    Config::Display::Width, 
+    Config::Display::Height, 
+    Config::Display::Address
+);
+
 void setup() {
+    System::setDisplay(&Display);
     System::setup();
 
 #ifdef DEBUG

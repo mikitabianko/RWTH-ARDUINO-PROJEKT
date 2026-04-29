@@ -35,13 +35,13 @@ namespace TicTacToe {
         int16_t x1, y1;
         uint16_t w, h;
 
-        System::display.setTextSize(size);
-        System::display.setTextColor(SH110X_WHITE);
-        System::display.getTextBounds(text, 0, 0, &x1, &y1, &w, &h);
+        System::display->setTextSize(size);
+        System::display->setTextColor(Drivers::Color::White);
+        System::display->getTextBounds(text, 0, 0, &x1, &y1, &w, &h);
 
         int x = (SCREEN_W - w) / 2;
-        System::display.setCursor(x, y);
-        System::display.print(text);
+        System::display->setCursor(x, y);
+        System::display->print(text);
     }
 
     bool checkWin(char player) {
@@ -67,25 +67,25 @@ namespace TicTacToe {
     }
 
     void drawX(int cx, int cy) {
-        System::display.drawLine(cx + 5, cy + 5, cx + 35, cy + 15, SH110X_WHITE);
-        System::display.drawLine(cx + 5, cy + 15, cx + 35, cy + 5, SH110X_WHITE);
+        System::display->drawLine(cx + 5, cy + 5, cx + 35, cy + 15, Drivers::Color::White);
+        System::display->drawLine(cx + 5, cy + 15, cx + 35, cy + 5, Drivers::Color::White);
     }
 
     void drawO(int cx, int cy) {
-        System::display.drawCircle(cx + 20, cy + 10, 10, SH110X_WHITE);
+        System::display->drawCircle(cx + 20, cy + 10, 10, Drivers::Color::White);
     }
 
     void show() {
-        System::display.clearDisplay();
+        System::display->clear();
 
         if (!gameOver) {
             // Draw grid lines
             // Vertical lines
-            System::display.drawLine(offsetX + cellWidth, offsetY, offsetX + cellWidth, offsetY + 3 * cellHeight, SH110X_WHITE);
-            System::display.drawLine(offsetX + 2 * cellWidth, offsetY, offsetX + 2 * cellWidth, offsetY + 3 * cellHeight, SH110X_WHITE);
+            System::display->drawLine(offsetX + cellWidth, offsetY, offsetX + cellWidth, offsetY + 3 * cellHeight, Drivers::Color::White);
+            System::display->drawLine(offsetX + 2 * cellWidth, offsetY, offsetX + 2 * cellWidth, offsetY + 3 * cellHeight, Drivers::Color::White);
             // Horizontal lines
-            System::display.drawLine(offsetX, offsetY + cellHeight, offsetX + 3 * cellWidth, offsetY + cellHeight, SH110X_WHITE);
-            System::display.drawLine(offsetX, offsetY + 2 * cellHeight, offsetX + 3 * cellWidth, offsetY + 2 * cellHeight, SH110X_WHITE);
+            System::display->drawLine(offsetX, offsetY + cellHeight, offsetX + 3 * cellWidth, offsetY + cellHeight, Drivers::Color::White);
+            System::display->drawLine(offsetX, offsetY + 2 * cellHeight, offsetX + 3 * cellWidth, offsetY + 2 * cellHeight, Drivers::Color::White);
 
             // Draw board content
             for (int y = 0; y < 3; ++y) {
@@ -104,14 +104,14 @@ namespace TicTacToe {
             // Highlight cursor with a rounded rectangle
             int cx = offsetX + cursorX * cellWidth;
             int cy = offsetY + cursorY * cellHeight;
-            System::display.drawRoundRect(cx - 1, cy - 1, cellWidth + 2, cellHeight + 2, 3, SH110X_WHITE);
+            System::display->drawRoundRect(cx - 1, cy - 1, cellWidth + 2, cellHeight + 2, 3, Drivers::Color::White);
         } else {
             String msg = (winner == 'D') ? "Draw!" : String(winner) + " wins!";
-            drawCenteredText(msg, 20, 2, SH110X_WHITE);
-            drawCenteredText("Press to restart", 50, 1, SH110X_WHITE);
+            drawCenteredText(msg, 20, 2, Drivers::Color::White);
+            drawCenteredText("Press to restart", 50, 1, Drivers::Color::White);
         }
 
-        System::display.display();
+        System::display->display();
     }
 
     void update() {

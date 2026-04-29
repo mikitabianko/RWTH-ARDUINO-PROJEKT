@@ -30,54 +30,54 @@ namespace SlotMachine {
         }
     }
 
-    void drawCenteredText(String text, int y, uint8_t size, uint8_t color) {
+    void drawCenteredText(String text, int y, uint8_t size, Drivers::Color color) {
         int16_t x1, y1;
         uint16_t w, h;
 
-        System::display.setTextSize(size);
-        System::display.setTextColor(SH110X_WHITE);
-        System::display.getTextBounds(text, 0, 0, &x1, &y1, &w, &h);
+        System::display->setTextSize(size);
+        System::display->setTextColor(color);
+        System::display->getTextBounds(text, 0, 0, &x1, &y1, &w, &h);
 
         int x = (SCREEN_W - w) / 2;
-        System::display.setCursor(x, y);
-        System::display.print(text);
+        System::display->setCursor(x, y);
+        System::display->print(text);
     }
 
     void show() {
-        System::display.clearDisplay();
+        System::display->clear();
 
-        System::display.setTextColor(SH110X_WHITE);
+        System::display->setTextColor(Drivers::Color::White);
 
         if (isAlive) {
-            System::display.setTextSize(1);
-            System::display.setCursor(3, 0);
-            System::display.print("Credits: ");
-            System::display.print(credits);
+            System::display->setTextSize(1);
+            System::display->setCursor(3, 0);
+            System::display->print("Credits: ");
+            System::display->print(credits);
 
             if (gain > 0) {
-                System::display.print(" (+");
-                System::display.print(gain);
-                System::display.print(")");
+                System::display->print(" (+");
+                System::display->print(gain);
+                System::display->print(")");
             }
 
-            System::display.setTextSize(7);
+            System::display->setTextSize(7);
             for (int i = 0; i < 3; ++i) {
-                System::display.setCursor(i * 42, 8);
-                System::display.print(symbols[reels[i]]);
+                System::display->setCursor(i * 42, 8);
+                System::display->print(symbols[reels[i]]);
             }
 
             if (!spinning) {
-                System::display.setTextSize(1);
-                System::display.setCursor(30, 56);
-                System::display.print("Press to spin");
+                System::display->setTextSize(1);
+                System::display->setCursor(30, 56);
+                System::display->print("Press to spin");
             }
         } else {
-            drawCenteredText("Your credits: " + String(credits), 0, 1, SH110X_WHITE);
-            drawCenteredText("Game Over!", 26, 2, SH110X_WHITE);
-            drawCenteredText("Press to play again", 56, 1, SH110X_WHITE);
+            drawCenteredText("Your credits: " + String(credits), 0, 1, Drivers::Color::White);
+            drawCenteredText("Game Over!", 26, 2, Drivers::Color::White);
+            drawCenteredText("Press to play again", 56, 1, Drivers::Color::White);
         }
 
-        System::display.display();
+        System::display->display();
     }
 
     void update() {

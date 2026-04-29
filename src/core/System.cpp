@@ -1,7 +1,7 @@
 #include "System.h"
 
 namespace System {
-    Adafruit_SH1106G display(SCREEN_W, SCREEN_H, &Wire, -1);
+    Drivers::IDisplay* display = nullptr;
 
     DigitalButton joystickButton(JOYSTICK_BUTTON_PIN, 40);
     Joystick joystick(JOYSTICK_X_PIN, JOYSTICK_Y_PIN);
@@ -18,6 +18,10 @@ namespace System {
             return (dx > 0) ? Direction::Right : Direction::Left;
         } 
         return (dy > 0) ? Direction::Down : Direction::Up;  
+    }
+
+    void setDisplay(Drivers::IDisplay* driver) {
+        display = driver;
     }
 
     void DigitalButton::init() {
@@ -155,7 +159,7 @@ namespace System {
         unsigned long startTime = millis();
         bool displayStarted = false;
         while (!displayStarted && (millis() - startTime < 5000)) {
-            displayStarted = display.begin(0x3C);
+            displayStarted = display->begin();
             if (!displayStarted) delay(100);  
         }
 
@@ -169,8 +173,8 @@ namespace System {
             Serial.println("Display was connected");
             Serial.println("Display is cleared");
 #endif
-            display.clearDisplay();
-            display.display();
+            display->clear();
+            display->display();
         }
 
         joystickButton.init();

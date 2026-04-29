@@ -2,7 +2,8 @@
 #define SYSTEM_H
 
 #include "Arduino.h"
-#include "Adafruit_SH110X.h"
+#include "../Config.h"
+#include "../drivers/common/IDisplay.h"
 
 #define SCREEN_H 64
 #define SCREEN_W 128
@@ -13,7 +14,7 @@ constexpr int JOYSTICK_Y_PIN = A0;
 constexpr int BUTTONS_PIN = A2;
 
 namespace System {
-    extern Adafruit_SH1106G display;
+    extern Drivers::IDisplay* display;
 
     enum class Axis { X, Y };
     enum class CrossDirection { Positive, Negative };
@@ -107,6 +108,8 @@ namespace System {
     extern Joystick joystick;
     extern AnalogButtons analogButtons;
     
+    void setDisplay(Drivers::IDisplay* driver);
+
     void setup();
 
     void handleInput();

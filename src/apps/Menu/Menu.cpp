@@ -10,32 +10,31 @@ namespace Menu {
         return 0;
     }
 
-    void drawCenteredText(String& text, int y, uint8_t size, uint8_t color) {
+    void drawCenteredText(String& text, int y, uint8_t size, Drivers::Color color) {
         int16_t x1, y1;
         uint16_t w, h;
 
-        System::display.setTextSize(size);
-        System::display.setTextColor(SH110X_WHITE);
-        System::display.getTextBounds(text, 0, 0, &x1, &y1, &w, &h);
+        System::display->setTextSize(size);
+        System::display->setTextColor(color);
+        System::display->getTextBounds(text, 0, 0, &x1, &y1, &w, &h);
 
         int x = (SCREEN_W - w) / 2;
-        System::display.setCursor(x, y);
-        System::display.print(text);
+        System::display->setCursor(x, y);
+        System::display->print(text);
     }
 
-    bool isMenuMode = true;
     void drawMenu() {
-        System::display.clearDisplay();
+        System::display->clear();
         int page = selectedGame / 3;
         for (int i = 0; i < min(3, gamesCount - page * 3); ++i) {        
             int newId = page * 3 + i;
 
             if (selectedGame == newId) 
-                drawCenteredText(games[newId].Name, SCREEN_H / 3 * i + 4, 2, SH110X_WHITE);
+                drawCenteredText(games[newId].Name, SCREEN_H / 3 * i + 4, 2, Drivers::Color::White);
             else 
-                drawCenteredText(games[newId].Name, SCREEN_H / 3 * i + 8, 1, SH110X_WHITE);
+                drawCenteredText(games[newId].Name, SCREEN_H / 3 * i + 8, 1, Drivers::Color::White);
         }
-        System::display.display();
+        System::display->display();
     }
 
     void processMenu() {

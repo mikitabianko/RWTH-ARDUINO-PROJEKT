@@ -55,49 +55,49 @@ namespace Flappy {
         int16_t x1, y1;
         uint16_t w, h;
 
-        System::display.setTextSize(size);
-        System::display.setTextColor(SH110X_WHITE);
-        System::display.getTextBounds(text, 0, 0, &x1, &y1, &w, &h);
+        System::display->setTextSize(size);
+        System::display->setTextColor(Drivers::Color::White);
+        System::display->getTextBounds(text, 0, 0, &x1, &y1, &w, &h);
 
         int x = (SCREEN_W - w) / 2;
-        System::display.setCursor(x, y);
-        System::display.print(text);
+        System::display->setCursor(x, y);
+        System::display->print(text);
     }
 
     void show() {
-        System::display.clearDisplay();
+        System::display->clear();
 
         if (isAlive) {
             // Draw bird
-            System::display.drawBitmap(birdX, birdY, birdBitmap, birdWidth, birdHeight, SH110X_WHITE);
+            System::display->drawBitmap(birdX, birdY, birdBitmap, birdWidth, birdHeight, Drivers::Color::White);
 
             // Draw obstacles
             for (int i = 0; i < numObstacles; ++i) {
                 // Top pipe
-                System::display.fillRect(obstacles[i].x, 0, pipeWidth, obstacles[i].topHeight, SH110X_WHITE);
+                System::display->fillRect(obstacles[i].x, 0, pipeWidth, obstacles[i].topHeight, Drivers::Color::White);
                 // Bottom pipe
                 int bottomY = obstacles[i].topHeight + gapHeight;
                 int bottomH = SCREEN_H - bottomY;
-                System::display.fillRect(obstacles[i].x, bottomY, pipeWidth, bottomH, SH110X_WHITE);
+                System::display->fillRect(obstacles[i].x, bottomY, pipeWidth, bottomH, Drivers::Color::White);
             }
 
             // Draw score
-            System::display.setTextSize(1);
-            System::display.setTextColor(SH110X_WHITE);
-            System::display.setCursor(SCREEN_W - 30, 0);
-            System::display.print(score);
+            System::display->setTextSize(1);
+            System::display->setTextColor(Drivers::Color::White);
+            System::display->setCursor(SCREEN_W - 30, 0);
+            System::display->print(score);
         } else {
             if (score == 0) {
-                drawCenteredText("Flappy", 15, 2, SH110X_WHITE);
-                drawCenteredText("Press to start", 40, 1, SH110X_WHITE);
+                drawCenteredText("Flappy", 15, 2, Drivers::Color::White);
+                drawCenteredText("Press to start", 40, 1, Drivers::Color::White);
             } else {
-                drawCenteredText("Game Over!", 15, 2, SH110X_WHITE);
-                drawCenteredText("Score: " + String(score), 35, 1, SH110X_WHITE);
-                drawCenteredText("Press to restart", 50, 1, SH110X_WHITE);
+                drawCenteredText("Game Over!", 15, 2, Drivers::Color::White);
+                drawCenteredText("Score: " + String(score), 35, 1, Drivers::Color::White);
+                drawCenteredText("Press to restart", 50, 1, Drivers::Color::White);
             }
         }
 
-        System::display.display();
+        System::display->display();
     }
 
     void update() {
