@@ -4,6 +4,7 @@
 #include "Arduino.h"
 #include "../Config.h"
 #include "../drivers/common/IDisplay.h"
+#include "../drivers/common/IDigitalButton.h"
 
 #define SCREEN_H 64
 #define SCREEN_W 128
@@ -15,33 +16,14 @@ constexpr int BUTTONS_PIN = A2;
 
 namespace System {
     extern Drivers::IDisplay* display;
+    extern Drivers::IDigitalButton* joystickButton;
+
+    void setJoyButton(Drivers::IDigitalButton* driver);
+    void setDisplay(Drivers::IDisplay* driver);
 
     enum class Axis { X, Y };
     enum class CrossDirection { Positive, Negative };
     enum class Direction { Center, Up, Down, Left, Right };
-
-    class DigitalButton {
-    private:
-        int pin; 
-        bool currentState = false; 
-        bool lastReading = false; 
-        unsigned long lastDebounceTime = 0; 
-        const unsigned long debounceDelay;
-
-        bool _isPressed = false;
-        bool _isReleased = false;
-    public:
-        DigitalButton(int p, unsigned long delay = 50);
-
-        void init();
-
-        void read();
-
-        bool isPressed();
-        bool isReleased();
-
-        bool isHeld() const;
-    };
 
     struct ButtonThreshold {
         int min;
@@ -104,7 +86,6 @@ namespace System {
         {950, 1024}
     };
 
-    extern DigitalButton joystickButton;
     extern Joystick joystick;
     extern AnalogButtons analogButtons;
     

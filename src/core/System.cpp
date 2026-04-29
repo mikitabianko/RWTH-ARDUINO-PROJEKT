@@ -2,12 +2,18 @@
 
 namespace System {
     Drivers::IDisplay* display = nullptr;
+    Drivers::IDigitalButton* joystickButton = nullptr;
 
-    DigitalButton joystickButton(JOYSTICK_BUTTON_PIN, 40);
+    void setDisplay(Drivers::IDisplay* driver) {
+        display = driver;
+    }
+
+    void setJoyButton(Drivers::IDigitalButton* driver) {
+        joystickButton = driver;
+    }
+
     Joystick joystick(JOYSTICK_X_PIN, JOYSTICK_Y_PIN);
     AnalogButtons analogButtons(BUTTONS_PIN, analogThresholds, 5, 40);
-
-    DigitalButton::DigitalButton(int p, unsigned long delay) : pin(p), debounceDelay(delay) {}
 
     InputState input;
 
@@ -18,52 +24,6 @@ namespace System {
             return (dx > 0) ? Direction::Right : Direction::Left;
         } 
         return (dy > 0) ? Direction::Down : Direction::Up;  
-    }
-
-    void setDisplay(Drivers::IDisplay* driver) {
-        display = driver;
-    }
-
-    void DigitalButton::init() {
-        pinMode(pin, INPUT_PULLUP);
-        lastReading = digitalRead(pin) == LOW;
-        currentState = lastReading;
-    }
-
-    void DigitalButton::read() {
-        bool reading = digitalRead(pin) == LOW; 
-        _isReleased = false;
-        _isPressed = false;
-
-        if (reading != lastReading) {
-            lastDebounceTime = millis(); 
-            lastReading = reading;
-        }
-
-        if ((millis() - lastDebounceTime) > debounceDelay) {
-            if (reading != currentState) {
-                bool previousState = currentState;
-                currentState = reading;
-
-                if (currentState && !previousState) {
-                    _isPressed = true;
-                } else if (!currentState && previousState) {
-                    _isReleased = true;
-                }
-            }
-        }
-    }
-
-    bool DigitalButton::isPressed() {
-        return _isPressed;
-    }
-
-    bool DigitalButton::isReleased() {
-        return _isReleased;
-    }
-
-    bool DigitalButton::isHeld() const {
-        return currentState;
     }
 
     AnalogButtons::AnalogButtons(int p, const ButtonThreshold* thresh, uint8_t count, unsigned long delay)
@@ -177,7 +137,7 @@ namespace System {
             display->display();
         }
 
-        joystickButton.init();
+        joystickButton->init();
         joystick.init();
         analogButtons.init();
 
@@ -255,12 +215,12 @@ namespace System {
 
     void handleInput() {
         joystick.read();
-        joystickButton.read();
+        joystickButton->read();
         analogButtons.read();
 
-        input.joystickButton.pressed |= joystickButton.isPressed();
-        input.joystickButton.released |= joystickButton.isReleased();
-        input.joystickButton.held |= joystickButton.isHeld();
+        input.joystickButton.pressed |= joystickButton->isPressed();
+        input.joystickButton.released |= joystickButton->isReleased();
+        input.joystickButton.held |= joystickButton->isHeld();
 
         for (uint8_t i = 0; i < analogButtons.getButtonCount(); ++i) {
             input.analogButtons[i].pressed |= analogButtons.isPressed(i);
@@ -361,9 +321,9 @@ namespace System {
 
 
         info |= nowMoved != wasMoved || nowMoved;
-        info |= joystickButton.isPressed();
-        info |= joystickButton.isReleased();
-        info |= joystickButton.isHeld();
+        info |= joystickButton->isPressed();
+        info |= joystickButton->isReleased();
+        info |= joystickButton->isHeld();
         for (int i = 0; i < 5; ++i) 
             info |= analogButtons.isPressed(i);
         for (int i = 0; i < 5; ++i) 
@@ -384,11 +344,11 @@ namespace System {
 
         Serial.print("JB:");
 
-        if (joystickButton.isPressed()) {
+        if (joystickButton->isPressed()) {
             Serial.print("P");
-        } else if (joystickButton.isReleased()) {
+        } else if (joystickButton->isReleased()) {
             Serial.print("R");
-        } else if (joystickButton.isHeld()) {
+        } else if (joystickButton->isHeld()) {
             Serial.print("H");
         } else {
             Serial.print("N");

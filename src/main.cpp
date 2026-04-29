@@ -4,6 +4,7 @@
 #include "Config.h"
 
 #include "drivers/display/SH110X/SH110X_Driver.h"
+#include "drivers/digitalButton/DigitalButton_Driver.h"
 
 #include "apps/Menu/Menu.h"
 
@@ -44,8 +45,11 @@ static Drivers::SH110X_Driver Display(
     Config::Display::Address
 );
 
+static Drivers::DigitalButton_Driver physicalJoyBtn(Config::Pins::JoystickBtn);
+
 void setup() {
     System::setDisplay(&Display);
+    System::setJoyButton(&physicalJoyBtn);
     System::setup();
 
 #ifdef DEBUG
