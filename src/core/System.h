@@ -2,63 +2,28 @@
 #define SYSTEM_H
 
 #include "Arduino.h"
-#include "../Config.h"
-#include "../drivers/common/IDisplay.h"
-#include "../drivers/common/IDigitalButton.h"
+#include "drivers/common/IDisplay.h"
+#include "drivers/common/IDigitalButton.h"
+#include "drivers/common/IAnalogButtons.h"
 
 #define SCREEN_H 64
 #define SCREEN_W 128
 
-constexpr int JOYSTICK_BUTTON_PIN = 10;
 constexpr int JOYSTICK_X_PIN = A1;
 constexpr int JOYSTICK_Y_PIN = A0;
-constexpr int BUTTONS_PIN = A2;
 
 namespace System {
     extern Drivers::IDisplay* display;
     extern Drivers::IDigitalButton* joystickButton;
+    extern Drivers::IAnalogButtons* analogButtons;
 
     void setJoyButton(Drivers::IDigitalButton* driver);
     void setDisplay(Drivers::IDisplay* driver);
+    void setAnalogButtons(Drivers::IAnalogButtons* driver);
 
     enum class Axis { X, Y };
     enum class CrossDirection { Positive, Negative };
     enum class Direction { Center, Up, Down, Left, Right };
-
-    struct ButtonThreshold {
-        int min;
-        int max;
-    };
-
-    class AnalogButtons {
-    private:
-        int pin;
-        const ButtonThreshold* thresholds;
-        uint8_t buttonCount;
-        const unsigned long debounceDelay;
-
-        byte currentState;
-        byte lastReading;
-        byte _isPressed; 
-        byte _isReleased;
-
-        unsigned long lastDebounceTime = 0;
-        int lastAnalogValue = 0;
-
-    public:
-        AnalogButtons(int p, const ButtonThreshold* thresh, uint8_t count, unsigned long delay = 50);
-        ~AnalogButtons();
-
-        void init();
-        void read();
-
-        bool isPressed(uint8_t index) const;
-        bool isReleased(uint8_t index) const;
-        bool isHeld(uint8_t index) const;
-
-        int getRawValue() const;
-        uint8_t getButtonCount() const;
-    };
 
     class Joystick {
     private:
@@ -78,16 +43,15 @@ namespace System {
         bool isMoved() const;
     };
 
-    constexpr ButtonThreshold analogThresholds[5] = {
-        {150, 250},    
-        {350, 450},
-        {550, 650},
-        {750, 900},
-        {950, 1024}
-    };
+    // constexpr ButtonThreshold analogThresholds[5] = {
+    //     {150, 250},    
+    //     {350, 450},
+    //     {550, 650},
+    //     {750, 900},
+    //     {950, 1024}
+    // };
 
     extern Joystick joystick;
-    extern AnalogButtons analogButtons;
     
     void setDisplay(Drivers::IDisplay* driver);
 

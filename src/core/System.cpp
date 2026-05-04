@@ -3,6 +3,7 @@
 namespace System {
     Drivers::IDisplay* display = nullptr;
     Drivers::IDigitalButton* joystickButton = nullptr;
+    Drivers::IAnalogButtons* analogButtons = nullptr;
 
     void setDisplay(Drivers::IDisplay* driver) {
         display = driver;
@@ -12,8 +13,11 @@ namespace System {
         joystickButton = driver;
     }
 
+    void setAnalogButtons(Drivers::IAnalogButtons* driver) {
+        analogButtons = driver;
+    }
+
     Joystick joystick(JOYSTICK_X_PIN, JOYSTICK_Y_PIN);
-    AnalogButtons analogButtons(BUTTONS_PIN, analogThresholds, 5, 40);
 
     InputState input;
 
@@ -24,80 +28,6 @@ namespace System {
             return (dx > 0) ? Direction::Right : Direction::Left;
         } 
         return (dy > 0) ? Direction::Down : Direction::Up;  
-    }
-
-    AnalogButtons::AnalogButtons(int p, const ButtonThreshold* thresh, uint8_t count, unsigned long delay)
-        : pin(p), thresholds(const_cast<ButtonThreshold*>(thresh)), buttonCount(count), debounceDelay(delay) {
-        
-        currentState     = 0;
-        lastReading      = 0;
-        _isPressed       = 0;
-        _isReleased      = 0;
-    }
-
-    AnalogButtons::~AnalogButtons() {}
-
-    void AnalogButtons::init() {
-        AnalogButtons::read();
-    }
-
-    void AnalogButtons::read() {
-        if ((millis() - lastDebounceTime) < debounceDelay) return;
-        _isReleased = 0;
-        _isPressed = 0;
-
-        int analogValue = analogRead(pin);
-
-        if (abs(lastAnalogValue - analogValue) < 50) return;
-        lastAnalogValue = analogValue;  
-
-        int activeButton = -1;  
-        for (uint8_t i = 0; i < buttonCount; i++) {
-            if (analogValue >= thresholds[i].min && analogValue <= thresholds[i].max) {
-                activeButton = i;
-                break;  
-            }
-        }
-
-        byte newState = 0;
-        if (activeButton >= 0) {
-            newState = (1 << activeButton);
-        }
-
-        if (newState != currentState) {
-            byte previousState = currentState;
-            currentState = newState;
-
-            _isPressed = currentState & ~previousState;   
-            _isReleased = previousState & ~currentState; 
-        }
-
-        if (newState != currentState) {
-            lastDebounceTime = millis();
-        }
-    }
-
-    bool AnalogButtons::isPressed(uint8_t index) const {
-        if (index >= buttonCount) return false;
-        return (_isPressed >> index) & 1;
-    }
-
-    bool AnalogButtons::isReleased(uint8_t index) const {
-        if (index >= buttonCount) return false;
-        return (_isReleased >> index) & 1;
-    }
-
-    bool AnalogButtons::isHeld(uint8_t index) const {
-        if (index >= buttonCount) return false;
-        return (currentState >> index) & 1;
-    }
-
-    int AnalogButtons::getRawValue() const {
-        return lastAnalogValue;
-    }
-
-    uint8_t AnalogButtons::getButtonCount() const {
-        return buttonCount;
     }
     
     void Joystick::init() {}
@@ -139,7 +69,7 @@ namespace System {
 
         joystickButton->init();
         joystick.init();
-        analogButtons.init();
+        analogButtons->init();
 
 #ifdef DEBUG
         Serial.println("Input devices are initialized");
@@ -216,16 +146,16 @@ namespace System {
     void handleInput() {
         joystick.read();
         joystickButton->read();
-        analogButtons.read();
+        analogButtons->read();
 
         input.joystickButton.pressed |= joystickButton->isPressed();
         input.joystickButton.released |= joystickButton->isReleased();
         input.joystickButton.held |= joystickButton->isHeld();
 
-        for (uint8_t i = 0; i < analogButtons.getButtonCount(); ++i) {
-            input.analogButtons[i].pressed |= analogButtons.isPressed(i);
-            input.analogButtons[i].released |= analogButtons.isReleased(i);
-            input.analogButtons[i].held |= analogButtons.isHeld(i);
+        for (uint8_t i = 0; i < analogButtons->getButtonCount(); ++i) {
+            input.analogButtons[i].pressed |= analogButtons->isPressed(i);
+            input.analogButtons[i].released |= analogButtons->isReleased(i);
+            input.analogButtons[i].held |= analogButtons->isHeld(i);
         }
 
         static int prevX = 512;
@@ -325,11 +255,11 @@ namespace System {
         info |= joystickButton->isReleased();
         info |= joystickButton->isHeld();
         for (int i = 0; i < 5; ++i) 
-            info |= analogButtons.isPressed(i);
+            info |= analogButtons->isPressed(i);
         for (int i = 0; i < 5; ++i) 
-            info |= analogButtons.isHeld(i);
+            info |= analogButtons->isHeld(i);
         for (int i = 0; i < 5; ++i) 
-            info |= analogButtons.isReleased(i);
+            info |= analogButtons->isReleased(i);
 
         wasMoved = nowMoved;
 
@@ -355,13 +285,13 @@ namespace System {
         }
         Serial.print("AP");
         for (int i = 0; i < 5; ++i) 
-            Serial.print(analogButtons.isPressed(i));
+            Serial.print(analogButtons->isPressed(i));
         Serial.print("AR");
         for (int i = 0; i < 5; ++i) 
-            Serial.print(analogButtons.isReleased(i));
+            Serial.print(analogButtons->isReleased(i));
         Serial.print("AH");
         for (int i = 0; i < 5; ++i) 
-            Serial.print(analogButtons.isHeld(i));
+            Serial.print(analogButtons->isHeld(i));
         Serial.print("b");
         // for (uint8_t i = 0; i < 5; ++i) {
         //     Serial.print(input.analogButtons[i].pressed);

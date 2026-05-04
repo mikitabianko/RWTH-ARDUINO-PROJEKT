@@ -5,6 +5,7 @@
 
 #include "drivers/display/SH110X/SH110X_Driver.h"
 #include "drivers/digitalButton/DigitalButton_Driver.h"
+#include "drivers/analogButtons/AnalogButtons_Driver.h"
 
 #include "apps/Menu/Menu.h"
 
@@ -47,9 +48,12 @@ static Drivers::SH110X_Driver Display(
 
 static Drivers::DigitalButton_Driver physicalJoyBtn(Config::Pins::JoystickBtn);
 
+static Drivers::AnalogButtons_Driver analogBtns(Config::Pins::AnalogButtons, Config::Thresholds::analogButtons, 5, 40);
+
 void setup() {
     System::setDisplay(&Display);
     System::setJoyButton(&physicalJoyBtn);
+    System::setAnalogButtons(&analogBtns);
     System::setup();
 
 #ifdef DEBUG

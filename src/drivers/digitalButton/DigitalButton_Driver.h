@@ -1,3 +1,5 @@
+#ifndef DIGITALBUTTON_H
+#define DIGITALBUTTON_H
 #include "../common/IDigitalButton.h"
 
 namespace Drivers {
@@ -24,3 +26,4 @@ namespace Drivers {
         bool isHeld() override;
     };
 }
+#endif

@@ -2,6 +2,7 @@
 #define CONFIG_H
 
 #include <Arduino.h>
+#include "drivers/analogButtons/AnalogButtons_Driver.h"
 
 namespace Config {
     namespace Display {
@@ -15,6 +16,16 @@ namespace Config {
         constexpr int JoystickY = A0;
         constexpr int JoystickBtn = 10;
         constexpr int AnalogButtons = A2;
+    }
+
+    namespace Thresholds {
+        constexpr Drivers::ButtonThreshold analogButtons[5] = {
+            {150, 250},    
+            {350, 450},
+            {550, 650},
+            {750, 900},
+            {950, 1024}
+        };
     }
 
     namespace Timing {
